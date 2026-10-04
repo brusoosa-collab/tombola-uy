@@ -1,0 +1,12 @@
+__pycache__/
+*.py[cod]
+analysis/
+serve.py
+iniciar.bat
+A1.jpg
+2813179.jpg
+*.avif
+
+# Datos temporales o locales
+.DS_Store
+Thumbs.db

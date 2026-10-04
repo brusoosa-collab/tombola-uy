@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="es-UY">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tómbola Uruguay — Números recomendados</title>
+<meta name="description" content="Generador de números recomendados para la Tómbola de Uruguay, basado en el análisis estadístico de los sorteos oficiales de la DNLQ.">
+<link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+<div class="liquid-background" aria-hidden="true">
+  <span class="liquid-blob blob-main"></span>
+  <span class="liquid-blob blob-orbit"></span>
+  <span class="liquid-blob blob-drop"></span>
+  <span class="liquid-blob blob-mini"></span>
+  <span class="liquid-blob blob-left"></span>
+  <span class="liquid-blob blob-bottom"></span>
+  <span class="liquid-blob blob-edge"></span>
+</div>
+<header class="site-header">
+  <div class="wrap header-inner">
+    <div class="brand-lockup">
+      <a class="brand-link" href="#generador" aria-label="Tómbola UY, inicio">
+        <span class="brand-symbol" aria-hidden="true"></span>
+        <span class="brand">Tómbola<span class="brand-country">UY</span></span>
+      </a>
+      <p class="tagline">La tómbola uruguaya · Datos oficiales DNLQ</p>
+    </div>
+    <nav class="site-nav" aria-label="Navegación principal">
+      <a href="#generador">Generador</a>
+      <a href="#seguimiento">Seguimiento</a>
+      <a href="#analisis">Análisis</a>
+      <a href="#historial">Sorteos recientes</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="panel generator" id="generador" aria-labelledby="gen-title">
+    <div class="panel-head">
+      <div class="heading-group">
+        <p class="eyebrow">Tu próxima jugada</p>
+        <h1 id="gen-title">Números recomendados</h1>
+      </div>
+      <p class="meta" id="dataset-meta" aria-live="polite">Cargando datos…</p>
+    </div>
+
+    <div class="controls">
+      <label class="control control-block">
+        <span>Fecha del sorteo objetivo</span>
+        <input id="fecha-objetivo" type="date" required>
+      </label>
+
+      <fieldset class="control">
+        <legend>Horario del sorteo objetivo</legend>
+        <div class="segmented" id="periodo" role="radiogroup" aria-label="Horario del sorteo objetivo">
+          <button type="button" data-value="vespertina" class="is-active" role="radio" aria-checked="true">Vespertino · 15:00</button>
+          <button type="button" data-value="nocturna" role="radio" aria-checked="false">Nocturno · 21:00</button>
+        </div>
+        <p class="hint schedule-hint" id="schedule-hint" role="status"></p>
+        <p class="hint">Fechas especiales: <a href="https://www.loteria.gub.uy/ver_calendario.php" target="_blank" rel="noopener">consultá el calendario oficial DNLQ</a>.</p>
+      </fieldset>
+
+      <fieldset class="control">
+        <legend>Cantidad de números</legend>
+        <div class="segmented" id="cantidad" role="radiogroup" aria-label="Cantidad de números">
+          <button type="button" data-value="3" role="radio" aria-checked="false">3</button>
+          <button type="button" data-value="4" role="radio" aria-checked="false">4</button>
+          <button type="button" data-value="5" class="is-active" role="radio" aria-checked="true">5</button>
+          <button type="button" data-value="6" role="radio" aria-checked="false">6</button>
+          <button type="button" data-value="7" role="radio" aria-checked="false">7</button>
+        </div>
+      </fieldset>
+
+      <label class="control control-block">
+        <span>Estrategia</span>
+        <select id="estrategia">
+          <option value="balanced">Equilibrados</option>
+          <option value="hot">Calientes</option>
+          <option value="due">Vencidos</option>
+          <option value="cold">Fríos</option>
+          <option value="random">Azar puro</option>
+        </select>
+        <span class="hint">
+          <span id="estrategia-hint"></span>
+          <a class="info-link" id="estrategias-link" href="#estrategias">¿Cómo funcionan las estrategias?</a>
+        </span>
+      </label>
+
+      <label class="control control-block">
+        <span>Ventana de análisis</span>
+        <select id="ventana">
+          <option value="50">Últimos 50 sorteos</option>
+          <option value="100" selected>Últimos 100 sorteos</option>
+          <option value="250">Últimos 250 sorteos</option>
+          <option value="1000">Últimos 1000 sorteos</option>
+          <option value="0">Historial completo</option>
+        </select>
+      </label>
+    </div>
+
+    <div class="generator-actions">
+      <button type="button" class="cta" id="generar">Generar números</button>
+      <p class="cta-note">Solo usa resultados anteriores al sorteo objetivo. El orden estadístico expresa preferencias, <strong>no predice</strong> el resultado.</p>
+      <p class="tracking-status" id="tracking-status" role="status"></p>
+    </div>
+
+    <div class="results" id="results" hidden>
+      <p class="results-label" id="results-label" aria-live="polite"></p>
+      <ul class="balls" id="balls"></ul>
+      <div class="why" id="why"></div>
+      <button type="button" class="register-play-button" id="registrar-jugada" hidden>Registrar jugada para seguimiento</button>
+    </div>
+  </section>
+
+  <section class="overview-strip" aria-label="Resumen rápido">
+    <article class="overview-card overview-target">
+      <span class="overview-mark" aria-hidden="true">01</span>
+      <p class="overview-label">Sorteo objetivo</p>
+      <strong id="overview-target">Cargando</strong>
+      <small id="overview-target-note">Horario regular DNLQ</small>
+    </article>
+    <article class="overview-card overview-source">
+      <span class="overview-mark" aria-hidden="true">02</span>
+      <p class="overview-label">Datos oficiales</p>
+      <strong id="overview-source">Consultando</strong>
+      <small id="overview-source-note">Última consulta a la DNLQ</small>
+    </article>
+    <article class="overview-card overview-tracking">
+      <span class="overview-mark" aria-hidden="true">03</span>
+      <p class="overview-label">Seguimiento</p>
+      <strong id="overview-tracking">0 jugadas</strong>
+      <small id="overview-tracking-note">0 resueltas · 0 pendientes</small>
+    </article>
+  </section>
+
+  <section class="panel tracking-panel" id="seguimiento" aria-labelledby="tracking-title">
+    <div class="panel-head">
+      <div class="heading-group">
+        <p class="eyebrow">Validación prospectiva</p>
+        <h2 id="tracking-title">Seguimiento de jugadas</h2>
+      </div>
+      <p class="meta">Registro local · exportable a CSV</p>
+    </div>
+    <p class="lead">
+      Después de generar, registrá explícitamente la combinación que querés evaluar.
+      Se conserva una jugada por fecha, horario, estrategia, ventana y cantidad;
+      cuando se cargue el resultado oficial, se calcularán los aciertos.
+      El registro queda en este navegador y se puede exportar a CSV.
+    </p>
+    <div class="tracking-toolbar">
+      <button type="button" class="secondary-button" id="exportar-registro">Exportar CSV</button>
+    </div>
+    <p class="tracking-summary" id="tracking-summary" aria-live="polite"></p>
+    <div class="performance-module">
+      <div class="performance-heading">
+        <h3>Resultados por estrategia</h3>
+        <span class="performance-legend"><i aria-hidden="true"></i> marcador: azar esperado</span>
+      </div>
+      <div class="strategy-performance" id="strategy-performance"></div>
+      <p class="empty-state" id="strategy-performance-empty">El gráfico aparecerá cuando haya resultados oficiales conciliados.</p>
+      <p class="performance-note">Promedios descriptivos: con pocas jugadas no alcanzan para concluir que una estrategia sea mejor.</p>
+    </div>
+    <ol class="tracking-list" id="tracking-list"></ol>
+    <p class="empty-state" id="tracking-empty">Todavía no hay jugadas registradas. Generá una jugada y usá “Registrar jugada para seguimiento”.</p>
+  </section>
+
+  <details class="panel strategy-accordion" id="estrategias" aria-labelledby="estr-title">
+    <summary class="strategy-summary">
+      <div>
+        <p class="eyebrow">Metodología</p>
+        <h2 id="estr-title">¿Cómo funcionan las estrategias?</h2>
+        <p class="meta">5 estrategias · explicaciones y backtest</p>
+      </div>
+      <span class="accordion-action">Ver explicación</span>
+    </summary>
+    <div class="strategy-content">
+    <p class="lead">
+      Ninguna estrategia predice el sorteo: lo que hacen es
+      asignar un peso a cada uno de los <strong>100 números (00–99)</strong> según
+      dos medidas calculadas sobre la ventana que elegís y seleccionar al azar,
+      con ponderación y sin reemplazo.
+    </p>
+
+    <div class="two-col defs">
+      <div class="def">
+        <h3>Frecuencia</h3>
+        <p>Cuántas veces salió el número dentro de la ventana elegida.</p>
+      </div>
+      <div class="def">
+        <h3>Ausencia</h3>
+        <p>Cuántos sorteos hace que no aparece. Un valor de 0 significa que salió en el último sorteo.</p>
+      </div>
+    </div>
+
+    <div class="strategy-grid">
+      <article class="strategy-card is-default">
+        <h3>Equilibrados</h3>
+        <p>
+          Multiplica las puntuaciones normalizadas de frecuencia y ausencia.
+          Luego selecciona números al azar sin reemplazo, con una probabilidad
+          proporcional a ese producto; no elige necesariamente los puntajes más altos.
+        </p>
+        <p class="backtest">Backtest (ventana 100): 0,988 aciertos por sorteo vs 1,000 al azar (p=0,76; p-ajustada=1,00).</p>
+      </article>
+
+      <article class="strategy-card">
+        <h3>Calientes</h3>
+        <p>
+          Da mayor peso a los números con más apariciones en la ventana. La
+          selección sigue siendo aleatoria y ponderada, no una predicción.
+        </p>
+        <p class="backtest">Backtest (ventana 100): 0,976 aciertos por sorteo vs 1,000 al azar (p=0,54; p-ajustada=1,00).</p>
+      </article>
+
+      <article class="strategy-card">
+        <h3>Vencidos</h3>
+        <p>
+          Da mayor peso a los que hace más sorteos que no salen. En el historial,
+          P(salir | ausencia) varió entre 0,197 y 0,204, sin diferencias
+          estadísticamente significativas.
+        </p>
+        <p class="backtest">Backtest (ventana 100): 1,044 aciertos por sorteo vs 1,000 al azar (p=0,26; p-ajustada=1,00).</p>
+      </article>
+
+      <article class="strategy-card">
+        <h3>Fríos</h3>
+        <p>
+          Da mayor peso a los menos sorteados de la ventana, el lado opuesto de
+          “Calientes”.
+        </p>
+        <p class="backtest">Backtest (ventana 100): 1,020 aciertos por sorteo vs 1,000 al azar (p=0,61; p-ajustada=1,00).</p>
+      </article>
+
+      <article class="strategy-card">
+        <h3>Azar puro</h3>
+        <p>
+          Elige los números al azar entre 00 y 99, sin usar ningún dato. Todas
+          las jugadas tienen la misma probabilidad, así que esta opción es tan
+          válida como cualquier otra.
+        </p>
+        <p class="backtest">Backtest (ventana 100): 1,002 aciertos por sorteo vs 1,000 al azar (p=0,96; p-ajustada=1,00).</p>
+      </article>
+    </div>
+
+    <p class="lead">
+      Backtest: 500 sorteos cronológicos, jugadas de 5 números y muestreo igual
+      al generador. Se compararon 5 estrategias × 3 ventanas; el mejor resultado
+      nominal fue 1,090 con “Fríos” y ventana 50 (p=0,022), pero al ajustar por
+      las 15 comparaciones p=0,324.
+    </p>
+
+    <h3 class="sub">Ventana de análisis</h3>
+    <p class="lead">
+      Define cuántos sorteos se tienen en cuenta. <strong>50 sorteos</strong>
+      reflejan la tendencia más reciente; el <strong>historial completo</strong>
+      da un promedio más estable. Cambiarla recalcula el mapa de calor, las listas
+      de calientes y vencidos, y la recomendación.
+    </p>
+
+    <div class="notice inline-notice">
+      <p>
+        La probabilidad de que un número salga en un sorteo es siempre
+        <strong>20 de cada 100 (20%)</strong>, sin importar cuántas veces salió
+        antes ni cuánto hace que no aparece. Ninguna estrategia modifica esa
+        probabilidad: sirven para ordenar tus preferencias, no para prever el
+        resultado. <a class="info-link" href="#analisis">Ver el análisis completo</a>
+      </p>
+    </div>
+    </div>
+  </details>
+
+  <section class="panel" id="analisis" aria-labelledby="analisis-title">
+    <div class="panel-head">
+      <h2 id="analisis-title">¿Se puede prever el sorteo?</h2>
+      <p class="meta">11 familias de análisis · corte 03/10/2026</p>
+    </div>
+
+    <p class="lead">
+      Corrimos el análisis sobre los <strong>51.780 números</strong> sorteados
+      entre el 03/01/2022 y el 03/10/2026. Este bloque corresponde a ese corte
+      estadístico; el generador y el historial reciente sí usan los datos actualizados.
+      Tras ajustar el backtest por las comparaciones realizadas, no se detectó una
+      mejora predictiva significativa.
+    </p>
+
+    <details class="analysis-details">
+      <summary>Ver resultados de las 11 familias de análisis</summary>
+      <ol class="tests">
+      <li>
+        <span class="t-name">Frecuencia global de los 100 números</span>
+        <span class="t-res">χ²=70,17 · gl=99 · p corregido=0,80</span>
+        <span class="t-verdict">compatible con uniforme</span>
+      </li>
+      <li>
+        <span class="t-name">Decenas, terminación y par/impar</span>
+        <span class="t-res">p corregido=0,31 · 0,76 · 0,90</span>
+        <span class="t-verdict">sin sesgo</span>
+      </li>
+      <li>
+        <span class="t-name">Repetición entre sorteos consecutivos</span>
+        <span class="t-res">3,992 vs 4,000 esperados · p=0,80</span>
+        <span class="t-verdict">sin memoria</span>
+      </li>
+      <li>
+        <span class="t-name">Reincidencia según el rezago (lag 1–10)</span>
+        <span class="t-res">0,197 a 0,201 vs 0,200</span>
+        <span class="t-verdict">independiente</span>
+      </li>
+      <li>
+        <span class="t-name">Intervalos entre apariciones</span>
+        <span class="t-res">media 4,992 vs 5,000 · distribución p=0,22</span>
+        <span class="t-verdict">compatible con distribución geométrica</span>
+      </li>
+      <li>
+        <span class="t-name">P(salir según los sorteos de ausencia)</span>
+        <span class="t-res">observado 0,197–0,204; sin diferencia significativa</span>
+        <span class="t-verdict">ni calientes ni vencidos ayudan</span>
+      </li>
+      <li>
+        <span class="t-name">Vespertina vs nocturna y día de la semana</span>
+        <span class="t-res">período p corregido=1,00 · día de semana p=0,24</span>
+        <span class="t-verdict">sin diferencia</span>
+      </li>
+      <li>
+        <span class="t-name">Tendencia temporal en 10 bloques</span>
+        <span class="t-res">los 10 con p&gt;0,21</span>
+        <span class="t-verdict">sin deriva</span>
+      </li>
+      <li>
+        <span class="t-name">Compresibilidad de la secuencia</span>
+        <span class="t-res">36.182 vs 36.139 bytes al azar (+0,12%)</span>
+        <span class="t-verdict">similar a secuencias al azar</span>
+      </li>
+      <li>
+        <span class="t-name">Backtest: 500 sorteos predichos con datos previos</span>
+        <span class="t-res">mejor caso 1,090 vs 1,000 · p-ajustada=0,324</span>
+        <span class="t-verdict">sin mejora tras el ajuste</span>
+      </li>
+      <li>
+        <span class="t-name">Score logarítmico marginal fuera de muestra</span>
+        <span class="t-res">azar −25.020 · frecuencia suavizada −25.106</span>
+        <span class="t-verdict">mejor score entre los modelos probados</span>
+      </li>
+      </ol>
+    </details>
+
+    <div class="verdict">
+      <p>
+        Bajo las reglas del juego, cada sorteo es un muestreo
+        <strong>uniforme sin reemplazo</strong>: todo número tiene
+        <strong>20%</strong> de probabilidad. El historial analizado no demuestra
+        que la frecuencia o la ausencia cambien esa probabilidad; el generador
+        ordena preferencias, pero <strong>no predice el próximo sorteo</strong>.
+      </p>
+    </div>
+  </section>
+
+  <details class="panel history-accordion" id="explorar-historial">
+    <summary class="history-summary">
+      <div>
+        <p class="eyebrow">Datos visuales</p>
+        <h2>Explorar el historial</h2>
+        <p class="meta">Mapa de calor, números calientes y vencidos</p>
+      </div>
+      <span class="accordion-action">Ver gráficos</span>
+    </summary>
+    <div class="history-content">
+      <section class="history-card" aria-labelledby="stats-title">
+        <div class="panel-head">
+          <h2 id="stats-title">Mapa de calor 00 – 99</h2>
+          <p class="meta" id="heatmap-meta"></p>
+        </div>
+        <div class="heatmap" id="heatmap" role="img" aria-label="Frecuencia de cada número"></div>
+        <div class="legend">
+          <span class="legend-swatch cold"></span> menos frecuente
+          <span class="legend-swatch hot"></span> más frecuente
+        </div>
+      </section>
+
+      <div class="two-col history-ranks">
+        <section class="history-card">
+          <div class="panel-head"><h2>Números calientes</h2></div>
+          <ol class="rank" id="hot-list"></ol>
+        </section>
+        <section class="history-card">
+          <div class="panel-head"><h2>Números vencidos</h2></div>
+          <ol class="rank" id="due-list"></ol>
+        </section>
+      </div>
+    </div>
+  </details>
+
+  <section class="panel" id="historial" aria-labelledby="recent-title">
+    <div class="panel-head">
+      <h2 id="recent-title">Últimos sorteos anteriores al objetivo</h2>
+      <p class="meta">Fuente: loteria.gub.uy</p>
+    </div>
+    <div class="recent" id="recent"></div>
+  </section>
+
+  <section class="panel notice">
+    <h2>Aviso importante</h2>
+    <p>
+      Cada sorteo de la Tómbola es un evento independiente y al azar: los números
+      recomendados se calculan con frecuencias y ausencias del historial oficial,
+      y <strong>no garantizan ningún resultado</strong>. La información de esta
+      página es orientativa y de entretenimiento. Juegue con moderación.
+    </p>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <p>
+      Datos de la Dirección Nacional de Loterías y Quinielas (DNLQ) — Ministerio de
+      Economía y Finanzas, Uruguay.
+    </p>
+    <p id="footer-range"></p>
+    <p id="data-update"></p>
+  </div>
+</footer>
+
+<script src="data/tombola.js"></script>
+<script src="assets/app.js"></script>
+</body>
+</html>
