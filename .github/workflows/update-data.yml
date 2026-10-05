@@ -2,8 +2,9 @@ name: Actualizar datos DNLQ
 
 on:
   schedule:
-    # Una consulta diaria; los horarios Hobby de Cloudflare/Vercel no aplican.
+    # 03:15 y 15:30 aproximadamente en Uruguay (UTC-3).
     - cron: "15 6 * * *"
+    - cron: "30 18 * * *"
   workflow_dispatch:
 
 permissions:
