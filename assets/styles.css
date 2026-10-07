@@ -291,6 +291,91 @@ body {
   cursor: not-allowed;
 }
 
+.account-popover[hidden] {
+  display: none;
+}
+
+.account-popover {
+  position: fixed;
+  z-index: 80;
+  top: 82px;
+  right: max(20px, calc((100vw - 1120px) / 2));
+}
+
+.account-card {
+  position: relative;
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr);
+  gap: 4px 12px;
+  width: min(330px, calc(100vw - 40px));
+  padding: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.95);
+  border-radius: 18px;
+  background: linear-gradient(135deg, #fff, #f3edff);
+  box-shadow: 0 18px 48px rgba(47, 16, 92, 0.23);
+}
+
+.account-avatar {
+  display: grid;
+  grid-row: span 2;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: linear-gradient(140deg, #6d31c2, #e23d9a 65%, #ff9164);
+  color: #fff;
+  font-size: 0.9rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+.account-info {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.account-info strong {
+  color: var(--text);
+  font-size: 0.92rem;
+}
+
+.account-info span,
+.account-info small {
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 0.76rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.account-close {
+  position: absolute;
+  top: 9px;
+  right: 10px;
+  width: 24px;
+  height: 24px;
+  border: 0;
+  border-radius: 50%;
+  background: #eee9f7;
+  color: var(--accent);
+  cursor: pointer;
+}
+
+.account-logout {
+  grid-column: 1 / -1;
+  margin-top: 13px;
+  padding: 9px 12px;
+  border: 1px solid #d8cce9;
+  border-radius: 999px;
+  background: #fff;
+  color: var(--accent);
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
 .auth-modal[hidden] {
   display: none;
 }

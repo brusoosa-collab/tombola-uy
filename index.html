@@ -36,6 +36,19 @@
   </div>
 </header>
 
+<div class="account-popover" id="account-popover" hidden>
+  <div class="account-card" role="dialog" aria-labelledby="account-title">
+    <div class="account-avatar" id="account-avatar" aria-hidden="true">TU</div>
+    <div class="account-info">
+      <strong id="account-title">Mi cuenta</strong>
+      <span id="account-email"></span>
+      <small id="account-role"></small>
+    </div>
+    <button type="button" class="account-close" id="account-close" aria-label="Cerrar panel">×</button>
+    <button type="button" class="account-logout" id="account-logout">Cerrar sesión</button>
+  </div>
+</div>
+
 <main class="wrap">
   <section class="panel generator" id="generador" aria-labelledby="gen-title">
     <div class="panel-head">

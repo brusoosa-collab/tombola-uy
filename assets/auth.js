@@ -22,6 +22,12 @@
     reset: document.getElementById("auth-reset"),
     adminPanel: document.getElementById("administracion"),
     adminUsers: document.getElementById("admin-user-list"),
+    account: document.getElementById("account-popover"),
+    accountClose: document.getElementById("account-close"),
+    accountLogout: document.getElementById("account-logout"),
+    accountAvatar: document.getElementById("account-avatar"),
+    accountEmail: document.getElementById("account-email"),
+    accountRole: document.getElementById("account-role"),
   };
 
   function init() {
@@ -33,9 +39,11 @@
 
     supabaseClient = window.supabase.createClient(config.url, config.publishableKey);
     el.open.addEventListener("click", function () {
-      if (session) signOut();
+      if (session) el.account.hidden = !el.account.hidden;
       else openModal("login");
     });
+    el.accountClose.addEventListener("click", closeAccount);
+    el.accountLogout.addEventListener("click", signOut);
     el.close.addEventListener("click", closeModal);
     document.querySelector("[data-auth-close]").addEventListener("click", closeModal);
     el.mode.addEventListener("click", function () {
@@ -85,6 +93,9 @@
           .order("created_at", { ascending: true });
         if (!usersResult.error) users = usersResult.data || [];
       }
+      el.accountRole.textContent = profile && profile.role === "admin"
+        ? "Superusuario"
+        : "Cuenta personal";
     }
     renderAdmin(profile && profile.role === "admin", users);
     document.dispatchEvent(new CustomEvent("tombola-auth-change", {
@@ -281,11 +292,25 @@
   function updateHeader() {
     if (!session) {
       el.open.textContent = "Iniciar sesión";
+      el.account.hidden = true;
       el.mode.textContent = "Crear una cuenta";
       return;
     }
-    el.open.textContent = "Cerrar sesión";
+    el.open.textContent = "Mi cuenta";
+    el.accountEmail.textContent = session.user.email || "";
+    var name = session.user.user_metadata && session.user.user_metadata.display_name;
+    el.accountAvatar.textContent = initials(name || session.user.email || "TU");
+    el.accountRole.textContent = "Cuenta personal";
     setMode("login");
+  }
+
+  function closeAccount() {
+    el.account.hidden = true;
+  }
+
+  function initials(value) {
+    var parts = value.trim().split(/[\s@._-]+/).filter(Boolean);
+    return parts.slice(0, 2).map(function (part) { return part.charAt(0); }).join("").toUpperCase();
   }
 
   function friendlyError(error) {
