@@ -31,6 +31,7 @@
       <a href="#seguimiento">Seguimiento</a>
       <a href="#analisis">Análisis</a>
       <a href="#historial">Sorteos recientes</a>
+      <button type="button" class="auth-button" id="auth-open">Iniciar sesión</button>
     </nav>
   </div>
 </header>
@@ -152,6 +153,11 @@
       <button type="button" class="secondary-button" id="exportar-registro">Exportar CSV</button>
     </div>
     <p class="tracking-summary" id="tracking-summary" aria-live="polite"></p>
+    <details class="generation-history">
+      <summary>Historial de números generados</summary>
+      <ol class="tracking-list" id="generation-list"></ol>
+      <p class="empty-state" id="generation-empty">Las jugadas generadas aparecerán acá.</p>
+    </details>
     <div class="performance-module">
       <div class="performance-heading">
         <h3>Resultados por estrategia</h3>
@@ -163,6 +169,18 @@
     </div>
     <ol class="tracking-list" id="tracking-list"></ol>
     <p class="empty-state" id="tracking-empty">Todavía no hay jugadas registradas. Generá una jugada y usá “Registrar jugada para seguimiento”.</p>
+  </section>
+
+  <section class="panel admin-panel" id="administracion" hidden aria-labelledby="admin-title">
+    <div class="panel-head">
+      <div class="heading-group">
+        <p class="eyebrow">Superusuario</p>
+        <h2 id="admin-title">Administrar cuentas</h2>
+      </div>
+      <p class="meta">Límite de 10 usuarios</p>
+    </div>
+    <p class="lead">Solo tu cuenta de administrador puede ver esta sección. Eliminar una cuenta también elimina sus jugadas.</p>
+    <ol class="admin-user-list" id="admin-user-list"></ol>
   </section>
 
   <details class="panel strategy-accordion" id="estrategias" aria-labelledby="estr-title">
@@ -421,6 +439,44 @@
   </div>
 </footer>
 
+<div class="auth-modal" id="auth-modal" hidden>
+  <div class="auth-backdrop" data-auth-close></div>
+  <section class="auth-card" role="dialog" aria-modal="true" aria-labelledby="auth-title">
+    <button type="button" class="auth-close" id="auth-close" aria-label="Cerrar">×</button>
+    <p class="eyebrow">Tu espacio Tómbola</p>
+    <h2 id="auth-title">Iniciar sesión</h2>
+    <p class="auth-intro" id="auth-intro">Accedé a tus jugadas desde cualquier dispositivo.</p>
+    <form id="auth-form">
+      <label class="auth-field" id="auth-name-field" hidden>
+        <span>Nombre</span>
+        <input id="auth-name" type="text" autocomplete="name">
+      </label>
+      <label class="auth-field">
+        <span>Correo electrónico</span>
+        <input id="auth-email" type="email" autocomplete="email" required>
+      </label>
+      <label class="auth-field">
+        <span>Contraseña</span>
+        <input id="auth-password" type="password" minlength="8" autocomplete="current-password" required>
+      </label>
+      <button type="submit" class="auth-submit" id="auth-submit">Entrar</button>
+    </form>
+    <p class="auth-message" id="auth-message" role="status"></p>
+    <div class="auth-links">
+      <button type="button" id="auth-mode">Crear una cuenta</button>
+      <button type="button" id="auth-reset">Olvidé mi contraseña</button>
+    </div>
+  </section>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+window.TOMBOLA_SUPABASE = {
+  url: "https://ntqxmaedvurlrbbdmqns.supabase.co",
+  publishableKey: "sb_publishable_rSmVEfh-7FF49CPv5pLdFA_10s3C5Js"
+};
+</script>
+<script src="assets/auth.js"></script>
 <script src="data/tombola.js"></script>
 <script src="assets/app.js"></script>
 </body>

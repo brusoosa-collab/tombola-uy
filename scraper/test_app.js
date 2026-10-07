@@ -54,6 +54,7 @@ const nodes = {};
 let downloadedLink = null;
 let exportedBlob = null;
 global.document = {
+  addEventListener() {},
   body: {
     appendChild(node) {
       downloadedLink = node;
@@ -140,6 +141,7 @@ eval(fs.readFileSync(path.join(root, "data", "tombola.js"), "utf8"));
 const dataset = window.TOMBOLA_DATA;
 dataset.calendar_month = "2026-10";
 dataset.no_draw_dates = ["2026-10-12"];
+dataset.draws = dataset.draws.filter((draw) => draw.date < "2026-10-05");
 dataset.draws.push(
   { date: "2026-10-05", period: "vespertina", numbers: Array.from({ length: 20 }, (_, i) => i) },
   { date: "2026-10-05", period: "nocturna", numbers: Array.from({ length: 20 }, (_, i) => i + 20) },

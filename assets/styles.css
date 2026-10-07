@@ -273,6 +273,193 @@ body {
   color: #fff;
 }
 
+.auth-button {
+  padding: 8px 12px;
+  border: 0;
+  border-radius: 999px;
+  background: linear-gradient(110deg, #794ac4, #ed527b);
+  color: #fff;
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 5px 14px rgba(112, 46, 166, 0.2);
+}
+
+.auth-button:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.auth-modal[hidden] {
+  display: none;
+}
+
+.auth-modal {
+  position: fixed;
+  z-index: 100;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+}
+
+.auth-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(32, 13, 70, 0.56);
+  backdrop-filter: blur(8px);
+}
+
+.auth-card {
+  position: relative;
+  width: min(100%, 430px);
+  padding: 30px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  border-radius: 23px;
+  background: #fff;
+  box-shadow: 0 28px 90px rgba(38, 8, 76, 0.3);
+}
+
+.auth-card::before {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: 7px;
+  background: linear-gradient(90deg, #743ac2, #e51891, #ff8762);
+  content: "";
+}
+
+.auth-card h2 {
+  margin: 0;
+  color: var(--text);
+  font-size: 1.55rem;
+}
+
+.auth-intro {
+  margin: 7px 0 22px;
+  color: var(--muted);
+  font-size: 0.88rem;
+}
+
+.auth-close {
+  position: absolute;
+  top: 18px;
+  right: 19px;
+  width: 30px;
+  height: 30px;
+  border: 0;
+  border-radius: 50%;
+  background: #f1eff7;
+  color: var(--accent);
+  font-size: 1.3rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.auth-field {
+  display: grid;
+  gap: 6px;
+  margin-top: 14px;
+}
+
+.auth-field span {
+  color: #514c66;
+  font-size: 0.76rem;
+  font-weight: 700;
+}
+
+.auth-field input {
+  width: 100%;
+  padding: 11px 12px;
+  border: 1px solid #d8d3e5;
+  border-radius: 11px;
+  background: #fbfaff;
+  color: var(--text);
+  font: inherit;
+}
+
+.auth-submit {
+  width: 100%;
+  margin-top: 21px;
+  padding: 12px;
+  border: 0;
+  border-radius: 999px;
+  background: linear-gradient(110deg, #794ac4, #43216f 78%);
+  color: #fff;
+  font: inherit;
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.auth-submit:disabled {
+  opacity: 0.65;
+  cursor: wait;
+}
+
+.auth-message {
+  min-height: 1.25em;
+  margin: 12px 0 0;
+  color: var(--accent-strong);
+  font-size: 0.8rem;
+}
+
+.auth-links {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.auth-links button {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--accent-strong);
+  font: inherit;
+  font-size: 0.78rem;
+  cursor: pointer;
+}
+
+.admin-panel {
+  border-color: #e5bfd5;
+  background: linear-gradient(135deg, #fff, #fff3f8);
+}
+
+.admin-user-list {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.admin-user-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 11px 13px;
+  border: 1px solid #ecd9e4;
+  border-radius: 11px;
+  background: #fff;
+  color: var(--text);
+  font-size: 0.84rem;
+}
+
+.admin-user-item button {
+  padding: 6px 10px;
+  border: 1px solid #e1a5b8;
+  border-radius: 999px;
+  background: #fff1f5;
+  color: #a33b5a;
+  font: inherit;
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+
 main {
   display: grid;
   gap: 22px;
@@ -678,6 +865,46 @@ main {
   color: #43305f;
   font-size: 0.86rem;
   font-weight: 600;
+}
+
+.generation-history {
+  margin: 15px 0 18px;
+  border: 1px solid #ded5f0;
+  border-radius: 14px;
+  background: #fbfaff;
+  overflow: hidden;
+}
+
+.generation-history > summary {
+  padding: 12px 14px;
+  color: var(--accent);
+  font-size: 0.86rem;
+  font-weight: 700;
+  cursor: pointer;
+  list-style: none;
+}
+
+.generation-history > summary::-webkit-details-marker {
+  display: none;
+}
+
+.generation-history > summary::after {
+  content: "+";
+  float: right;
+  font-size: 1.1rem;
+}
+
+.generation-history[open] > summary {
+  border-bottom: 1px solid #ded5f0;
+}
+
+.generation-history[open] > summary::after {
+  content: "−";
+}
+
+.generation-history .tracking-list,
+.generation-history .empty-state {
+  margin: 12px;
 }
 
 .performance-module {

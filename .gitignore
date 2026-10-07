@@ -6,6 +6,7 @@ iniciar.bat
 A1.jpg
 2813179.jpg
 *.avif
+supabase/
 
 # Datos temporales o locales
 .DS_Store

@@ -59,6 +59,8 @@
     trackingSummary: document.getElementById("tracking-summary"),
     trackingList: document.getElementById("tracking-list"),
     trackingEmpty: document.getElementById("tracking-empty"),
+    generationList: document.getElementById("generation-list"),
+    generationEmpty: document.getElementById("generation-empty"),
     strategyChart: document.getElementById("strategy-performance"),
     strategyChartEmpty: document.getElementById("strategy-performance-empty"),
     exportTracking: document.getElementById("exportar-registro"),
@@ -66,6 +68,8 @@
 
   var draws = [];
   var trackedPicks = [];
+  var generatedPicks = [];
+  var cloudPicks = [];
   var storageAvailable = true;
   var currentPick = null;
   var noDrawDates = new Set();
@@ -87,6 +91,7 @@
     noDrawDates = new Set(Array.isArray(raw.no_draw_dates) ? raw.no_draw_dates : []);
 
     loadTracking();
+    loadGeneratedHistory();
     syncTrackedPicks();
 
     el.meta.textContent =
@@ -183,6 +188,84 @@
     el.strategyLink.addEventListener("click", function () {
       el.strategyAccordion.open = true;
     });
+    document.addEventListener("tombola-auth-change", onAuthChange);
+  }
+
+  function onAuthChange(event) {
+    cloudPicks = event.detail.picks || [];
+    if (event.detail.user) {
+      trackedPicks = mergeTrackedPicks(trackedPicks, cloudPicks);
+      generatedPicks = mergeGeneratedPicks(generatedPicks, cloudPicks);
+      renderTracking();
+    }
+  }
+
+  function mergeTrackedPicks(local, remote) {
+    var merged = local.slice();
+    remote.filter(function (row) { return row.tracked_at; }).forEach(function (row) {
+      var key = pickKey({
+        date: row.target_date,
+        period: row.period,
+        strategy: row.strategy,
+        window: row.analysis_window,
+        quantity: row.quantity,
+      });
+      if (!merged.some(function (entry) { return entry.key === key; })) {
+        merged.push(rowToTracked(row, key));
+      }
+    });
+    return merged;
+  }
+
+  function mergeGeneratedPicks(local, remote) {
+    var merged = local.slice();
+    remote.forEach(function (row) {
+      if (!merged.some(function (entry) { return entry.id === row.id; })) {
+        merged.push(rowToGenerated(row));
+      }
+    });
+    return merged.sort(function (a, b) { return b.generatedAt.localeCompare(a.generatedAt); });
+  }
+
+  function rowToTracked(row, key) {
+    return {
+      key: key,
+      date: row.target_date,
+      period: row.period,
+      strategy: row.strategy,
+      strategyLabel: strategyName(row.strategy),
+      window: row.analysis_window,
+      quantity: row.quantity,
+      numbers: row.numbers,
+      recordedAt: row.tracked_at,
+      resultNumbers: row.result_numbers,
+      hits: row.hits,
+      resolvedAt: row.resolved_at,
+    };
+  }
+
+  function rowToGenerated(row) {
+    return {
+      id: row.id,
+      date: row.target_date,
+      period: row.period,
+      strategy: row.strategy,
+      window: row.analysis_window,
+      quantity: row.quantity,
+      numbers: row.numbers,
+      generatedAt: row.generated_at,
+      tracked: Boolean(row.tracked_at),
+    };
+  }
+
+  function strategyName(strategy) {
+    return {
+      balanced: "Equilibrados",
+      hot: "Calientes",
+      due: "Vencidos",
+      cold: "Fríos",
+      random: "Azar puro",
+    }[strategy] || strategy;
   }
 
   function loadTracking() {
@@ -195,6 +278,36 @@
       storageAvailable = false;
       el.trackingStatus.textContent =
         "El navegador no permite guardar el registro localmente. Abrí la página con iniciar.bat.";
+    }
+  }
+
+  function loadGeneratedHistory() {
+    try {
+      var parsed = JSON.parse(window.localStorage.getItem("tombola.generated.history.v1") || "[]");
+      generatedPicks = Array.isArray(parsed) ? parsed : [];
+    } catch (error) {
+      generatedPicks = [];
+    }
+  }
+
+  function rememberGeneratedPick(pick) {
+    var entry = {
+      id: "local-" + Date.now() + "-" + Math.random().toString(36).slice(2),
+      date: pick.date,
+      period: pick.period,
+      strategy: pick.strategy,
+      window: pick.window,
+      quantity: pick.quantity,
+      numbers: pick.numbers.slice(),
+      generatedAt: pick.generatedAt,
+      tracked: false,
+    };
+    generatedPicks.unshift(entry);
+    generatedPicks = generatedPicks.slice(0, 100);
+    try {
+      window.localStorage.setItem("tombola.generated.history.v1", JSON.stringify(generatedPicks));
+    } catch (error) {
+      storageAvailable = false;
     }
   }
 
@@ -560,6 +673,7 @@
       window: state.ventana,
       quantity: state.cantidad,
       numbers: picked.slice(),
+      generatedAt: new Date().toISOString(),
     };
     var etiqueta =
       PERIOD_LABEL[state.periodo] +
@@ -591,6 +705,14 @@
         (s.absence[n] === 0 ? "salió en el último" : s.absence[n] + " sin salir");
       el.why.appendChild(tag);
     });
+
+    if (!existing) {
+      rememberGeneratedPick(currentPick);
+      if (window.TOMBOLA_AUTH && window.TOMBOLA_AUTH.savePick) {
+        window.TOMBOLA_AUTH.savePick(currentPick).catch(function () {});
+      }
+    }
+    renderTracking();
 
     el.registerPick.hidden = false;
     el.registerPick.disabled = Boolean(existing) || !storageAvailable || !targetIsUpcoming();
@@ -651,6 +773,18 @@
       hits: null,
     };
     trackedPicks.unshift(record);
+    if (window.TOMBOLA_AUTH && window.TOMBOLA_AUTH.savePick) {
+      window.TOMBOLA_AUTH.savePick({
+        date: record.date,
+        period: record.period,
+        strategy: record.strategy,
+        window: record.window,
+        quantity: record.quantity,
+        numbers: record.numbers,
+        tracked: true,
+        generatedAt: record.recordedAt,
+      }).catch(function () {});
+    }
     var saved = persistTracking();
     if (!saved) {
       trackedPicks.shift();
@@ -708,6 +842,22 @@
       el.trackingList.appendChild(item);
     });
     el.trackingEmpty.hidden = trackedPicks.length > 0;
+    renderGeneratedHistory();
+  }
+
+  function renderGeneratedHistory() {
+    var rows = generatedPicks.slice(0, 30);
+    el.generationList.innerHTML = "";
+    rows.forEach(function (entry) {
+      var item = document.createElement("li");
+      item.className = entry.tracked ? "tracking-item is-resolved" : "tracking-item is-pending";
+      item.textContent =
+        fmtDate(entry.date) + " · " + PERIOD_LABEL[entry.period] + " · " +
+        strategyName(entry.strategy) + " · " + entry.numbers.map(pad).join(" ") +
+        (entry.tracked ? " · registrada" : " · no registrada");
+      el.generationList.appendChild(item);
+    });
+    el.generationEmpty.hidden = rows.length > 0;
   }
 
   function renderStrategyPerformance(resolved) {
