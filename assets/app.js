@@ -196,6 +196,7 @@
     if (event.detail.user) {
       trackedPicks = mergeTrackedPicks(trackedPicks, cloudPicks);
       generatedPicks = mergeGeneratedPicks(generatedPicks, cloudPicks);
+      syncTrackedPicks();
       renderTracking();
     }
   }
