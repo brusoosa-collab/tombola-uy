@@ -201,7 +201,10 @@
   }
 
   function mergeTrackedPicks(local, remote) {
-    var merged = local.slice();
+    var byKey = {};
+    local.forEach(function (entry) {
+      if (entry.key) byKey[entry.key] = entry;
+    });
     remote.filter(function (row) { return row.tracked_at; }).forEach(function (row) {
       var key = pickKey({
         date: row.target_date,
@@ -210,11 +213,13 @@
         window: row.analysis_window,
         quantity: row.quantity,
       });
-      if (!merged.some(function (entry) { return entry.key === key; })) {
-        merged.push(rowToTracked(row, key));
+      var remoteEntry = rowToTracked(row, key);
+      var current = byKey[key];
+      if (!current || (!Number.isInteger(current.hits) && Number.isInteger(remoteEntry.hits))) {
+        byKey[key] = remoteEntry;
       }
     });
-    return merged;
+    return Object.keys(byKey).map(function (key) { return byKey[key]; });
   }
 
   function mergeGeneratedPicks(local, remote) {
