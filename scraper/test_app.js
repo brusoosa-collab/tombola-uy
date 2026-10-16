@@ -203,8 +203,8 @@ const actualRecent = Array.from(
 assert.deepStrictEqual(actualRecent, expectedRecent, "sorteos recientes en orden cronológico inverso");
 
 nodes.generar.handlers.click();
-assert.deepStrictEqual(nodes.balls.kids.map((ball) => ball.textContent), ["00", "01", "02", "03", "04"]);
-assert.strictEqual(nodes["registrar-jugada"].disabled, true, "muestra la jugada guardada y no permite sustituirla");
+assert.strictEqual(nodes.balls.kids.length, 5);
+assert.strictEqual(nodes["registrar-jugada"].disabled, false);
 
 const nocturna = nodes.periodo.children[1];
 nodes.periodo.handlers.click({ target: { closest: () => nocturna } });
@@ -227,8 +227,8 @@ assert.deepStrictEqual(
 );
 
 nodes.generar.handlers.click();
-assert.deepStrictEqual(nodes.balls.kids.map((ball) => ball.textContent), nocturnaPick);
-assert.strictEqual(nodes["registrar-jugada"].disabled, true, "no vuelve a sortear ni sobrescribe una configuración registrada");
+assert.strictEqual(nodes.balls.kids.length, 5, "permite generar otra variante con la misma configuración");
+assert.strictEqual(nodes["registrar-jugada"].disabled, false);
 
 nodes["fecha-objetivo"].value = "2026-10-10";
 nodes["fecha-objetivo"].handlers.change();

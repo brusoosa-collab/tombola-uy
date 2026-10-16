@@ -213,6 +213,7 @@
         strategy: row.strategy,
         window: row.analysis_window,
         quantity: row.quantity,
+        numbers: row.numbers,
       });
       var remoteEntry = rowToTracked(row, key);
       var current = byKey[key];
@@ -278,7 +279,12 @@
     try {
       var stored = window.localStorage.getItem(TRACKING_RECORDS_KEY);
       var parsed = stored ? JSON.parse(stored) : [];
-      trackedPicks = Array.isArray(parsed) ? parsed.filter(isValidTrackedPick) : [];
+      trackedPicks = Array.isArray(parsed)
+        ? parsed.filter(isValidTrackedPick).map(function (entry) {
+            entry.key = pickKey(entry);
+            return entry;
+          })
+        : [];
     } catch (error) {
       trackedPicks = [];
       storageAvailable = false;
@@ -331,7 +337,14 @@
   }
 
   function pickKey(pick) {
-    return [pick.date, pick.period, pick.strategy, pick.window, pick.quantity].join("|");
+    return [
+      pick.date,
+      pick.period,
+      pick.strategy,
+      pick.window,
+      pick.quantity,
+      Array.isArray(pick.numbers) ? pick.numbers.join(",") : "",
+    ].join("|");
   }
 
   function findDraw(date, period) {
@@ -659,19 +672,17 @@
       return;
     }
 
-    var candidate = {
-      date: state.fecha,
-      period: state.periodo,
-      strategy: state.estrategia,
-      window: state.ventana,
-      quantity: state.cantidad,
-    };
-    var key = pickKey(candidate);
-    var existing = trackedPicks.find(function (entry) { return entry.key === key; });
-    var picked = existing ? existing.numbers.slice() : recommend(list, state);
+    var picked = recommend(list, state);
     var s = stats(list);
     currentPick = {
-      key: key,
+      key: pickKey({
+        date: state.fecha,
+        period: state.periodo,
+        strategy: state.estrategia,
+        window: state.ventana,
+        quantity: state.cantidad,
+        numbers: picked,
+      }),
       date: state.fecha,
       period: state.periodo,
       strategy: state.estrategia,
@@ -690,8 +701,7 @@
       " números · " +
       strategyLabel() +
       " · " +
-      windowLabel(list.length) +
-      (existing ? " · jugada ya registrada" : "");
+      windowLabel(list.length);
 
     el.results.hidden = false;
     el.resultsLabel.textContent = etiqueta;
@@ -712,22 +722,16 @@
       el.why.appendChild(tag);
     });
 
-    if (!existing) {
-      rememberGeneratedPick(currentPick);
-      if (window.TOMBOLA_AUTH && window.TOMBOLA_AUTH.savePick) {
-        window.TOMBOLA_AUTH.savePick(currentPick).catch(function () {});
-      }
+    rememberGeneratedPick(currentPick);
+    if (window.TOMBOLA_AUTH && window.TOMBOLA_AUTH.savePick) {
+      window.TOMBOLA_AUTH.savePick(currentPick).catch(function () {});
     }
     renderTracking();
 
     el.registerPick.hidden = false;
-    el.registerPick.disabled = Boolean(existing) || !storageAvailable || !targetIsUpcoming();
-    el.registerPick.textContent = existing
-      ? "Jugada ya registrada"
-      : "Registrar jugada para seguimiento";
-    el.trackingStatus.textContent = existing
-      ? "Se muestra la primera jugada guardada para esta configuración."
-      : "";
+    el.registerPick.disabled = !storageAvailable || !targetIsUpcoming();
+    el.registerPick.textContent = "Registrar jugada para seguimiento";
+    el.trackingStatus.textContent = "";
   }
 
   function showGeneratePrompt() {
